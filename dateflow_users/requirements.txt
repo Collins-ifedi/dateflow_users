@@ -1,0 +1,11 @@
+fastapi>=0.109.0
+uvicorn[standard]
+sqlalchemy
+asyncpg
+aiosqlite
+python-multipart
+passlib[bcrypt]
+pyjwt
+cloudinary
+sib-api-v3-sdk
+pyyaml
