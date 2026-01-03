@@ -9,3 +9,4 @@ pyjwt
 cloudinary
 sib-api-v3-sdk
 pyyaml
+stripe
