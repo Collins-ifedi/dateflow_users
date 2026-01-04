@@ -1,4 +1,4 @@
-# dataflow_users/backend/main.py
+# dataflow_users/main.py
 
 import os
 import logging
@@ -8,7 +8,7 @@ from typing import List, Dict
 
 import stripe
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -24,15 +24,20 @@ from users.auth import router as auth_router
 # ======================================================
 
 # Setup Logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger("uvicorn")
 
 # Path Configuration
+# BASE_DIR is the directory containing this main.py file
 BASE_DIR = Path(__file__).resolve().parent
-FRONTEND_DIR = BASE_DIR / "frontend"
+
+# FRONTEND_DIR is the sibling folder "frontend" inside the same directory
+FRONTEND_DIR = (BASE_DIR / "frontend").resolve()
 
 # Stripe Configuration
-# Initialize API key globally
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
@@ -88,19 +93,21 @@ async def lifespan(app: FastAPI):
     Handles database initialization, connection cleanup, and production safety checks.
     """
     logger.info("🚀 DataFlow API Starting up...")
+    
+    # DEBUG: Print path information on startup
+    logger.info(f"📂 BASE_DIR: {BASE_DIR}")
+    logger.info(f"📂 FRONTEND_DIR: {FRONTEND_DIR}")
+    if not FRONTEND_DIR.exists():
+        logger.error("❌ CRITICAL: Frontend directory not found! Check your folder structure.")
 
     # 1. Critical Production Checks
-    # Ensures all external service credentials are present before traffic is accepted.
     if ENVIRONMENT == "production":
         missing_vars = []
         
-        # Stripe Checks
         if not os.getenv("STRIPE_SECRET_KEY"):
             missing_vars.append("STRIPE_SECRET_KEY")
         if not os.getenv("STRIPE_WEBHOOK_SECRET"):
             missing_vars.append("STRIPE_WEBHOOK_SECRET")
-            
-        # Vonage SMS Checks (NEW)
         if not os.getenv("VONAGE_API_KEY"):
             missing_vars.append("VONAGE_API_KEY")
         if not os.getenv("VONAGE_API_SECRET"):
@@ -109,7 +116,6 @@ async def lifespan(app: FastAPI):
         if missing_vars:
             error_msg = f"❌ CRITICAL: Missing required production env vars: {', '.join(missing_vars)}"
             logger.critical(error_msg)
-            # Stop the app startup to prevent running in an unsafe state
             raise RuntimeError(error_msg)
 
     # 2. Database Initialization
@@ -118,7 +124,6 @@ async def lifespan(app: FastAPI):
         logger.info("✅ Database initialized.")
     except Exception as e:
         logger.critical(f"❌ Database initialization failed: {e}")
-        # In strict production, raising here prevents the app from starting without a DB connection
         if ENVIRONMENT == "production":
             raise RuntimeError(f"Database connection failed: {e}")
     
@@ -133,7 +138,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="DataFlow Dating API",
-    version="1.3.1",
+    version="1.3.2",
     lifespan=lifespan,
     docs_url="/docs" if ENVIRONMENT != "production" else None,
     redoc_url=None
@@ -143,17 +148,11 @@ app = FastAPI(
 # MIDDLEWARE
 # ======================================================
 
-# 1. Proxy Headers Middleware
-# Vital for deployments on Render/Heroku/Nginx.
-# Ensures the app knows it's running behind HTTPS, which is required for
-# correct redirect URLs (Stripe) and cookie security.
 app.add_middleware(
     ProxyHeadersMiddleware,
-    trusted_hosts="*" # Trust the load balancer
+    trusted_hosts="*" 
 )
 
-# 2. CORS Middleware
-# Allows frontend to communicate with backend.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -166,34 +165,38 @@ app.add_middleware(
 # ROUTER REGISTRATION
 # ======================================================
 
-# Note: The Stripe Webhook is contained within 'user_router' (/api/users/webhook/stripe).
-# Since we use dependency injection (Depends) rather than global middleware for Auth,
-# the webhook route is safe from being blocked by login requirements 
-# as long as it does not declare a User dependency itself.
-
 app.include_router(auth_router)
 app.include_router(user_router)
 
 # ======================================================
-# HELPER: HTML SERVING
+# HELPER: HTML SERVING (FIXED)
 # ======================================================
 
-def serve_html(filename: str) -> HTMLResponse:
+def serve_html(filename: str):
     """
-    Securely serves HTML files directly from the backend/frontend folder.
+    Securely serves HTML files directly from the frontend folder.
+    Uses FileResponse for better performance and standard HTTP headers.
     """
-    file_path = FRONTEND_DIR / filename
+    # Resolve absolute path to the requested file
+    file_path = (FRONTEND_DIR / filename).resolve()
     
-    if FRONTEND_DIR not in file_path.resolve().parents:
+    # SECURITY CHECK: Prevent Path Traversal (e.g. asking for "../../etc/passwd")
+    # We ensure the resolved file path starts with the resolved FRONTEND_DIR path
+    if not str(file_path).startswith(str(FRONTEND_DIR)):
+        logger.warning(f"⚠️ Security Alert: Attempted path traversal to {file_path}")
         return HTMLResponse("<h1>403 - Forbidden</h1>", status_code=403)
 
     if not file_path.exists():
-        logger.warning(f"404 - File not found: {filename}")
-        if (FRONTEND_DIR / "404.html").exists() and filename != "404.html":
-            return serve_html("404.html")
+        logger.warning(f"🔍 404 Not Found: {file_path}")
+        
+        # Try to serve custom 404 page
+        error_page = FRONTEND_DIR / "404.html"
+        if error_page.exists() and filename != "404.html":
+            return FileResponse(error_page, status_code=404)
+            
         return HTMLResponse("<h1>404 - Page Not Found</h1>", status_code=404)
         
-    return HTMLResponse(file_path.read_text(encoding="utf-8"))
+    return FileResponse(file_path)
 
 # ======================================================
 # WEBSOCKET ENDPOINT
@@ -218,70 +221,69 @@ async def websocket_endpoint(websocket: WebSocket, match_id: int):
 
 @app.exception_handler(stripe.error.StripeError)
 async def stripe_exception_handler(request: Request, exc: stripe.error.StripeError):
-    """
-    Global handler for Stripe errors. 
-    Returns a clean JSON response so Stripe webhooks don't just timeout.
-    """
     logger.error(f"Stripe Error: {str(exc)}")
     return JSONResponse(
-        status_code=400, # or 500 depending on severity, 400 stops retries often
+        status_code=400,
         content={"detail": "Payment provider error", "error_code": str(exc)}
     )
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    # If API request fails, return JSON
     if request.url.path.startswith("/api"):
         return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
     
+    # If HTML request fails with 404, serve custom page
     if exc.status_code == 404:
         return serve_html("404.html")
         
     return HTMLResponse(f"<h1>{exc.status_code} - {exc.detail}</h1>", status_code=exc.status_code)
 
 # ======================================================
-# HTML ROUTES (FRONTEND MONOLITH)
+# HTML ROUTES
 # ======================================================
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/", response_class=FileResponse)
 async def index():
     return serve_html("authentication.html")
 
-@app.get("/authentication", response_class=HTMLResponse)
+@app.get("/authentication", response_class=FileResponse)
 async def authentication():
     return serve_html("authentication.html")
 
-@app.get("/profile", response_class=HTMLResponse)
+@app.get("/profile", response_class=FileResponse)
 async def profile():
     return serve_html("profile.html")
 
-@app.get("/matches", response_class=HTMLResponse)
+@app.get("/matches", response_class=FileResponse)
 async def matches():
     return serve_html("matches.html")
 
-@app.get("/messages", response_class=HTMLResponse)
+@app.get("/messages", response_class=FileResponse)
 async def messages():
     return serve_html("messages.html")
 
-@app.get("/verification-pending", response_class=HTMLResponse)
+@app.get("/verification-pending", response_class=FileResponse)
 async def verification_pending():
     return serve_html("verification_pending.html")
 
-@app.get("/account-blocked", response_class=HTMLResponse)
+@app.get("/account-blocked", response_class=FileResponse)
 async def account_blocked():
     return serve_html("account_blocked.html")
 
-@app.get("/about", response_class=HTMLResponse)
+@app.get("/about", response_class=FileResponse)
 async def about():
     return serve_html("about.html")
 
-@app.get("/terms", response_class=HTMLResponse)
+@app.get("/terms", response_class=FileResponse)
 async def terms():
     return serve_html("terms.html")
 
-@app.get("/privacy", response_class=HTMLResponse)
+@app.get("/privacy", response_class=FileResponse)
 async def privacy():
     return serve_html("privacy.html")
 
-@app.get("/{path:path}", response_class=HTMLResponse)
+# Catch-all for other static files (images, css, js if stored in frontend)
+@app.get("/{path:path}", response_class=FileResponse)
 async def catch_all(path: str):
-    return serve_html("404.html")
+    return serve_html(path)
