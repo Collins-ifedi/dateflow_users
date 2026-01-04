@@ -11,3 +11,4 @@ sib-api-v3-sdk
 pyyaml
 stripe
 passlib[bcrypt]
+vonage
