@@ -131,7 +131,7 @@ def send_email_via_brevo(to_email: str, subject: str, html_content: str):
     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(brevo_config))
     send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
         to=[{"email": to_email}],
-        sender={"name": "DataFlow Support", "email": "noreply@dataflow.com"},
+        sender={"name": "DataFlow Support", "email": "collins@glitchape.fun"},
         subject=subject,
         html_content=html_content
     )
