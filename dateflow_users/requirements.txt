@@ -4,7 +4,7 @@ sqlalchemy
 asyncpg
 aiosqlite
 python-multipart
-passlib[bcrypt]
+bcrypt==3.2.2
 pyjwt
 cloudinary
 sib-api-v3-sdk
