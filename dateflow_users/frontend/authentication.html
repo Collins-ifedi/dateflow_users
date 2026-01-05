@@ -640,7 +640,7 @@
                     throw new Error(data.detail || 'Login failed');
                 }
 
-                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('dateflow_token', data.access_token);
                 localStorage.setItem('user_id', data.user_id);
 
                 if (!data.is_verified) {
@@ -698,7 +698,7 @@
                     throw new Error(data.detail || 'Registration failed');
                 }
 
-                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('dateflow_token', data.access_token);
                 localStorage.setItem('user_id', data.user_id);
                 verificationId = data.verification_id;
 
