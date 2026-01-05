@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - DateFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #E11D48;
+            --primary-hover: #BE123C;
+            --background: #0A0A0B;
+            --background-secondary: #111113;
+            --surface: #18181B;
+            --surface-hover: #27272A;
+            --border: #27272A;
+            --text-primary: #FAFAFA;
+            --text-secondary: #A1A1AA;
+            --text-muted: #71717A;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .about-header {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 10, 11, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 100;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--surface);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .back-btn:hover { background: var(--surface-hover); }
+        .back-btn svg { width: 20px; height: 20px; stroke: var(--text-secondary); }
+
+        .hero-section {
+            padding: 80px 20px;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(225, 29, 72, 0.1) 0%, transparent 100%);
+        }
+
+        .logo-large {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .logo-large .logo-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, var(--primary), #F97316);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-large .logo-icon svg { width: 42px; height: 42px; fill: white; }
+        .logo-large .logo-text { font-size: 48px; font-weight: 700; }
+
+        .hero-section h1 {
+            font-size: 40px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero-section .highlight { color: var(--primary); }
+
+        .hero-section p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        .content-section {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .story-section {
+            margin-bottom: 60px;
+        }
+
+        .section-label {
+            display: inline-block;
+            padding: 6px 12px;
+            background: rgba(225, 29, 72, 0.1);
+            border: 1px solid rgba(225, 29, 72, 0.2);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .content-section h2 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .content-section p {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin: 40px 0;
+        }
+
+        .value-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+        }
+
+        .value-icon {
+            width: 52px;
+            height: 52px;
+            background: rgba(225, 29, 72, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .value-icon svg { width: 26px; height: 26px; stroke: var(--primary); }
+        .value-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
+        .value-card p { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 0; }
+
+        .stats-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 60px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 32px;
+            text-align: center;
+        }
+
+        .stat-item h4 {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .stat-item p { font-size: 14px; color: var(--text-muted); }
+
+        .team-section { margin: 60px 0; }
+
+        .team-intro {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+        }
+
+        .team-member {
+            text-align: center;
+        }
+
+        .team-member img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 16px;
+            border: 3px solid var(--border);
+        }
+
+        .team-member h4 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+        .team-member p { font-size: 13px; color: var(--text-muted); }
+
+        .cta-section {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--surface);
+            border-radius: 24px;
+            margin: 40px 0;
+        }
+
+        .cta-section h2 { font-size: 28px; font-weight: 600; margin-bottom: 16px; }
+        .cta-section p { color: var(--text-secondary); margin-bottom: 32px; font-size: 16px; }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 32px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .cta-btn:hover { background: var(--primary-hover); }
+        .cta-btn svg { width: 20px; height: 20px; stroke: currentColor; }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            padding: 40px 20px;
+            border-top: 1px solid var(--border);
+            margin-top: 60px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .footer-links a:hover { color: var(--text-secondary); }
+
+        @media (max-width: 640px) {
+            .hero-section h1 { font-size: 28px; }
+            .logo-large .logo-text { font-size: 32px; }
+            .logo-large .logo-icon { width: 56px; height: 56px; }
+            .logo-large .logo-icon svg { width: 32px; height: 32px; }
+            .stats-section { padding: 24px; }
+            .stat-item h4 { font-size: 28px; }
+            .footer-links { flex-wrap: wrap; gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="about-header">
+        <a href="index.html" class="back-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <h1 style="font-size: 20px; font-weight: 600;">About DateFlow</h1>
+    </header>
+
+    <section class="hero-section">
+        <div class="logo-large">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </div>
+            <span class="logo-text">DateFlow</span>
+        </div>
+        <h1>Where <span class="highlight">meaningful connections</span><br>happen naturally</h1>
+        <p>Founded on January 1st with a simple mission: to create a safe, authentic space where people can find genuine connections and lasting relationships.</p>
+    </section>
+
+    <div class="content-section">
+        <div class="story-section">
+            <span class="section-label">Our Story</span>
+            <h2>Built for Real Connections</h2>
+            <p>DateFlow was born from a shared frustration with the superficial nature of modern dating apps. We believed that finding love shouldn't feel like a numbers game. It should feel natural, safe, and meaningful.</p>
+            <p>On January 1st, we launched DateFlow with a commitment to putting authenticity first. We designed every feature with one question in mind: "Does this help people form genuine connections?" From our verification system that promotes trust, to our matching algorithm that values compatibility over quick swipes, everything we do serves our mission.</p>
+            <p>Today, DateFlow is home to a vibrant community of people who share our belief that quality matters more than quantity when it comes to relationships. We're not trying to be the biggest dating app—we're trying to be the one that actually works.</p>
+        </div>
+
+        <div class="values-grid">
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <h3>Safety First</h3>
+                <p>Your security is our top priority. From profile verification to robust reporting tools, we've built multiple layers of protection into every interaction.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </div>
+                <h3>Authentic Connections</h3>
+                <p>We encourage users to be their true selves. Our platform rewards genuine profiles and meaningful conversations over superficial interactions.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <h3>Inclusive Community</h3>
+                <p>DateFlow welcomes everyone. We celebrate diversity and believe that everyone deserves a chance to find love, regardless of background or identity.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
+                <h3>Privacy Respected</h3>
+                <p>Your data belongs to you. We never sell your information to third parties, and we give you full control over what you share and with whom.</p>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h4>2M+</h4>
+                    <p>Active Users</p>
+                </div>
+                <div class="stat-item">
+                    <h4>500K+</h4>
+                    <p>Successful Matches</p>
+                </div>
+                <div class="stat-item">
+                    <h4>50K+</h4>
+                    <p>Relationships Started</p>
+                </div>
+                <div class="stat-item">
+                    <h4>98%</h4>
+                    <p>Feel Safe Here</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-section">
+            <div class="team-intro">
+                <span class="section-label">Our Team</span>
+                <h2>The People Behind DateFlow</h2>
+                <p style="color: var(--text-secondary); max-width: 500px; margin: 16px auto 0;">A passionate team dedicated to helping people find love and build meaningful relationships.</p>
+            </div>
+            <div class="team-grid">
+                <div class="team-member">
+                    <img src="/placeholder.svg?height=120&width=120" alt="Alex Chen">
+                    <h4>Alex Chen</h4>
+                    <p>CEO & Co-Founder</p>
+                </div>
+                <div class="team-member">
+                    <img src="/placeholder.svg?height=120&width=120" alt="Sarah Miller">
+                    <h4>Sarah Miller</h4>
+                    <p>CTO & Co-Founder</p>
+                </div>
+                <div class="team-member">
+                    <img src="/placeholder.svg?height=120&width=120" alt="Maya Patel">
+                    <h4>Maya Patel</h4>
+                    <p>Head of Design</p>
+                </div>
+                <div class="team-member">
+                    <img src="/placeholder.svg?height=120&width=120" alt="James Wilson">
+                    <h4>James Wilson</h4>
+                    <p>Head of Trust & Safety</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <h2>Ready to Find Your Match?</h2>
+            <p>Join millions of people who have already found meaningful connections on DateFlow.</p>
+            <a href="authentication.html" class="cta-btn">
+                Get Started Free
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </a>
+        </div>
+
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms of Service</a>
+            <a href="mailto:hello@dateflow.com">Contact Us</a>
+        </div>
+    </div>
+</body>
+</html>
