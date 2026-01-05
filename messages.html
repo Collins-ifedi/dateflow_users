@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - DateFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #E11D48;
+            --primary-hover: #BE123C;
+            --background: #0A0A0B;
+            --background-secondary: #111113;
+            --surface: #18181B;
+            --surface-hover: #27272A;
+            --border: #27272A;
+            --text-primary: #FAFAFA;
+            --text-secondary: #A1A1AA;
+            --text-muted: #71717A;
+            --success: #22C55E;
+            --warning: #F59E0B;
+            --error: #EF4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Chat Header */
+        .chat-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 11, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--surface);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: var(--surface-hover);
+        }
+
+        .back-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--text-secondary);
+        }
+
+        .chat-user {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .chat-user img {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .chat-user-info h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .chat-user-info p {
+            font-size: 12px;
+            color: var(--success);
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--surface);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--surface-hover);
+        }
+
+        .action-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--text-secondary);
+        }
+
+        /* Messages Container */
+        .messages-container {
+            flex: 1;
+            padding: 80px 16px 100px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.received {
+            align-self: flex-start;
+            background: var(--surface);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: rgba(255,255,255,0.6);
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .message.received .message-time {
+            color: var(--text-muted);
+        }
+
+        .message-image {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .message-file {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .message-file svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .voice-message {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 200px;
+        }
+
+        .voice-play {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .voice-play svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+
+        .voice-wave {
+            flex: 1;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .voice-wave span {
+            width: 3px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 2px;
+        }
+
+        /* Chat Input */
+        .chat-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--background-secondary);
+            border-top: 1px solid var(--border);
+            padding: 12px 16px;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .input-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .input-btn:hover {
+            background: var(--surface);
+        }
+
+        .input-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke: var(--text-secondary);
+        }
+
+        .message-input {
+            flex: 1;
+            min-height: 40px;
+            max-height: 120px;
+            padding: 10px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-primary);
+            font-size: 15px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .message-input:focus {
+            border-color: var(--primary);
+        }
+
+        .message-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .send-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+            transform: rotate(45deg);
+        }
+
+        /* Date Separator */
+        .date-separator {
+            text-align: center;
+            padding: 16px 0;
+        }
+
+        .date-separator span {
+            padding: 6px 16px;
+            background: var(--surface);
+            border-radius: 100px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 16px;
+            background: var(--surface);
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
+
+        /* Emoji Picker */
+        .emoji-picker {
+            position: absolute;
+            bottom: 70px;
+            left: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            display: none;
+            z-index: 100;
+        }
+
+        .emoji-picker.show {
+            display: block;
+        }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+        }
+
+        .emoji-btn {
+            width: 32px;
+            height: 32px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .emoji-btn:hover {
+            background: var(--surface-hover);
+        }
+
+        /* Hidden file input */
+        .hidden-input {
+            display: none;
+        }
+
+        /* Recording UI */
+        .recording-ui {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--error);
+            border-radius: 20px;
+            flex: 1;
+        }
+
+        .recording-ui.active {
+            display: flex;
+        }
+
+        .recording-dot {
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .recording-time {
+            flex: 1;
+            color: white;
+            font-size: 14px;
+        }
+
+        .cancel-recording {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Messages List View */
+        .conversations-view {
+            display: none;
+        }
+
+        .conversations-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 11, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 20px;
+            z-index: 1000;
+        }
+
+        .conversations-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .conversations-list {
+            padding: 80px 16px 100px;
+        }
+
+        .conversation-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .conversation-item:hover {
+            background: var(--surface);
+        }
+
+        .conversation-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            object-fit: cover;
+        }
+
+        .conversation-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .conversation-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .conversation-preview {
+            font-size: 14px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conversation-meta {
+            text-align: right;
+        }
+
+        .conversation-time {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .unread-badge {
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+        }
+
+        /* Navigation */
+        .app-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--background-secondary);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 11px;
+            transition: color 0.2s;
+            padding: 8px 16px;
+        }
+
+        .nav-item.active, .nav-item:hover {
+            color: var(--primary);
+        }
+
+        .nav-item.premium {
+            color: var(--success);
+        }
+
+        .nav-item.premium:hover {
+            color: var(--primary);
+        }
+
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        @media (min-width: 768px) {
+            .app-nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Conversations List View -->
+    <div id="conversationsView" class="conversations-view">
+        <header class="conversations-header">
+            <h1>Messages</h1>
+        </header>
+        <div class="conversations-list" id="conversationsList">
+            <!-- Populated by JS -->
+        </div>
+        <nav class="app-nav">
+            <a href="matches.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+                <span>Matches</span>
+            </a>
+            <a href="messages.html" class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Messages</span>
+            </a>
+            <a href="subscription.html" class="nav-item premium">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <span>Premium</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>Profile</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Chat View -->
+    <div id="chatView" style="display: none; height: 100vh; display: flex; flex-direction: column;">
+        <header class="chat-header">
+            <button class="back-btn" onclick="showConversations()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <div class="chat-user" onclick="viewProfile()">
+                <img id="chatUserAvatar" src="/placeholder.svg?height=44&width=44" alt="User">
+                <div class="chat-user-info">
+                    <h2 id="chatUserName">Loading...</h2>
+                    <p>Online</p>
+                </div>
+            </div>
+            <div class="chat-actions">
+                <button class="action-btn" onclick="startCall('audio')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                </button>
+                <button class="action-btn" onclick="startCall('video')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="messages-container" id="messagesContainer">
+            <!-- Messages populated by JS -->
+        </div>
+
+        <div class="chat-input-container">
+            <div class="emoji-picker" id="emojiPicker">
+                <div class="emoji-grid">
+                    <button class="emoji-btn" onclick="insertEmoji('😀')">😀</button>
+                    <button class="emoji-btn" onclick="insertEmoji('😍')">😍</button>
+                    <button class="emoji-btn" onclick="insertEmoji('🥰')">🥰</button>
+                    <button class="emoji-btn" onclick="insertEmoji('😘')">😘</button>
+                    <button class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
+                    <button class="emoji-btn" onclick="insertEmoji('💕')">💕</button>
+                    <button class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
+                    <button class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
+                    <button class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
+                    <button class="emoji-btn" onclick="insertEmoji('🙈')">🙈</button>
+                    <button class="emoji-btn" onclick="insertEmoji('💋')">💋</button>
+                    <button class="emoji-btn" onclick="insertEmoji('✨')">✨</button>
+                    <button class="emoji-btn" onclick="insertEmoji('🌹')">🌹</button>
+                    <button class="emoji-btn" onclick="insertEmoji('💐')">💐</button>
+                    <button class="emoji-btn" onclick="insertEmoji('🎉')">🎉</button>
+                    <button class="emoji-btn" onclick="insertEmoji('👋')">👋</button>
+                </div>
+            </div>
+            <div class="chat-input-wrapper">
+                <div class="input-actions">
+                    <button class="input-btn" onclick="toggleEmoji()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                            <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                            <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                        </svg>
+                    </button>
+                    <button class="input-btn" onclick="triggerFileUpload()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                    </button>
+                    <button class="input-btn" id="voiceBtn" onmousedown="startRecording()" onmouseup="stopRecording()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
+                <textarea class="message-input" id="messageInput" placeholder="Type a message..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                    </svg>
+                </button>
+            </div>
+            <input type="file" class="hidden-input" id="fileInput" accept="image/*,video/*" onchange="handleFileSelect(event)">
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let currentMatchId = null;
+        let currentUserId = null;
+        let ws = null;
+
+        // Auth check
+        (async () => {
+    const token = localStorage.getItem('dateflow_token');
+
+    if (!token) {
+        window.location.href = 'authentication.html';
+        return;
+    }
+
+    const res = await fetch('/api/auth/me', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    if (!res.ok) {
+        localStorage.removeItem('dateflow_token');
+        window.location.href = 'authentication.html';
+    }
+})();
+        
+
+        function getAuthHeaders() {
+            return {
+                'Authorization': `Bearer ${localStorage.getItem('dateflow_token')}`
+            };
+        }
+
+        // Initialize
+        async function init() {
+            if (!checkAuth()) return;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const matchId = urlParams.get('match');
+
+            if (matchId) {
+                currentMatchId = matchId;
+                showChat();
+                await loadMessages();
+                connectWebSocket();
+            } else {
+                showConversations();
+                await loadConversations();
+            }
+        }
+
+        async function loadConversations() {
+            try {
+                const response = await fetch(`${API_BASE}/users/matches`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) throw new Error('Failed to load conversations');
+
+                const matches = await response.json();
+                displayConversations(matches);
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+            }
+        }
+
+        function displayConversations(matches) {
+            const list = document.getElementById('conversationsList');
+            
+            if (matches.length === 0) {
+                list.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
+                        <p>No conversations yet</p>
+                        <p style="font-size: 14px; margin-top: 8px;">Match with someone to start chatting!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = matches.map(match => `
+                <div class="conversation-item" onclick="openChat(${match.match_id}, ${match.user_id})">
+                    <img src="${match.profile_picture || '/placeholder.svg?height=56&width=56'}" alt="${match.username}" class="conversation-avatar">
+                    <div class="conversation-info">
+                        <div class="conversation-name">${match.username || 'DateFlow User'}</div>
+                        <div class="conversation-preview">Start a conversation!</div>
+                    </div>
+                    <div class="conversation-meta">
+                        <div class="conversation-time">${formatTime(match.matched_at)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openChat(matchId, userId) {
+            currentMatchId = matchId;
+            currentUserId = userId;
+            window.history.pushState({}, '', `messages.html?match=${matchId}`);
+            showChat();
+            loadMessages();
+            connectWebSocket();
+        }
+
+        function showConversations() {
+            document.getElementById('conversationsView').style.display = 'block';
+            document.getElementById('chatView').style.display = 'none';
+        }
+
+        function showChat() {
+            document.getElementById('conversationsView').style.display = 'none';
+            document.getElementById('chatView').style.display = 'flex';
+        }
+
+        async function loadMessages() {
+            if (!currentMatchId) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/users/messages/${currentMatchId}?limit=50`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) throw new Error('Failed to load messages');
+
+                const messages = await response.json();
+                displayMessages(messages.reverse());
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+
+        function displayMessages(messages) {
+            const container = document.getElementById('messagesContainer');
+            const myUserId = parseInt(localStorage.getItem('user_id'));
+
+            container.innerHTML = messages.map(msg => {
+                const isSent = msg.sender_id === myUserId;
+                let content = '';
+
+                if (msg.type === 'image' && msg.file_url) {
+                    content = `<img src="${msg.file_url}" alt="Image" class="message-image">`;
+                } else if (msg.type === 'video' && msg.file_url) {
+                    content = `<video src="${msg.file_url}" controls class="message-image"></video>`;
+                } else if (msg.type === 'audio' && msg.file_url) {
+                    content = `
+                        <div class="voice-message">
+                            <button class="voice-play"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
+                            <div class="voice-wave">
+                                ${Array(20).fill().map(() => `<span style="height: ${Math.random() * 20 + 8}px;"></span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    content = msg.content || '';
+                }
+
+                return `
+                    <div class="message ${isSent ? 'sent' : 'received'}">
+                        ${content}
+                        <div class="message-time">${formatMessageTime(msg.created_at)}</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function connectWebSocket() {
+            if (!currentMatchId) return;
+
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws/chat/${currentMatchId}`);
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                appendMessage(data);
+            };
+
+            ws.onclose = () => {
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+
+        function appendMessage(msg) {
+            const container = document.getElementById('messagesContainer');
+            const myUserId = parseInt(localStorage.getItem('user_id'));
+            const isSent = msg.sender_id === myUserId;
+
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${isSent ? 'sent' : 'received'}`;
+            messageEl.innerHTML = `
+                ${msg.content || ''}
+                <div class="message-time">Just now</div>
+            `;
+
+            container.appendChild(messageEl);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+
+            if (!content || !currentMatchId) return;
+
+            try {
+                const formData = new FormData();
+                formData.append('content', content);
+                formData.append('message_type', 'text');
+
+                const response = await fetch(`${API_BASE}/users/message/${currentMatchId}`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Failed to send message');
+
+                // Send via WebSocket for real-time
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        sender_id: parseInt(localStorage.getItem('user_id')),
+                        content: content,
+                        type: 'text'
+                    }));
+                }
+
+                input.value = '';
+                
+                // Append locally
+                appendMessage({
+                    sender_id: parseInt(localStorage.getItem('user_id')),
+                    content: content,
+                    type: 'text'
+                });
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function toggleEmoji() {
+            const picker = document.getElementById('emojiPicker');
+            picker.classList.toggle('show');
+        }
+
+        function insertEmoji(emoji) {
+            const input = document.getElementById('messageInput');
+            input.value += emoji;
+            input.focus();
+        }
+
+        function triggerFileUpload() {
+            document.getElementById('fileInput').click();
+        }
+
+        async function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file || !currentMatchId) return;
+
+            const messageType = file.type.startsWith('image/') ? 'image' : 'video';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('message_type', messageType);
+
+                const response = await fetch(`${API_BASE}/users/message/${currentMatchId}`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Failed to upload file');
+
+                loadMessages();
+            } catch (error) {
+                console.error('Error uploading file:', error);
+            }
+        }
+
+        let isRecording = false;
+        let recordingTimer = null;
+
+        function startRecording() {
+            isRecording = true;
+            document.getElementById('voiceBtn').style.background = 'var(--error)';
+        }
+
+        function stopRecording() {
+            if (!isRecording) return;
+            isRecording = false;
+            document.getElementById('voiceBtn').style.background = '';
+            // Implement actual recording logic here
+        }
+
+        function startCall(type) {
+            if (currentUserId) {
+                window.location.href = `calls.html?user=${currentUserId}&type=${type}`;
+            }
+        }
+
+        function viewProfile() {
+            if (currentUserId) {
+                window.location.href = `other_profile.html?id=${currentUserId}`;
+            }
+        }
+
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'now';
+            if (diff < 3600000) return `${Math.floor(diff/60000)}m`;
+            if (diff < 86400000) return `${Math.floor(diff/3600000)}h`;
+            return date.toLocaleDateString();
+        }
+
+        function formatMessageTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
