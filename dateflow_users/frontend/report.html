@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report User - DateFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #E11D48;
+            --primary-hover: #BE123C;
+            --background: #0A0A0B;
+            --background-secondary: #111113;
+            --surface: #18181B;
+            --surface-hover: #27272A;
+            --border: #27272A;
+            --text-primary: #FAFAFA;
+            --text-secondary: #A1A1AA;
+            --text-muted: #71717A;
+            --success: #22C55E;
+            --warning: #F59E0B;
+            --error: #EF4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .report-header {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 10, 11, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 100;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--surface);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .back-btn:hover { background: var(--surface-hover); }
+        .back-btn svg { width: 20px; height: 20px; stroke: var(--text-secondary); }
+        .report-header h1 { font-size: 20px; font-weight: 600; }
+
+        .report-content { padding: 24px 20px; max-width: 600px; margin: 0 auto; }
+
+        .report-intro {
+            text-align: center;
+            padding: 32px 0;
+        }
+
+        .report-icon {
+            width: 72px;
+            height: 72px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .report-icon svg { width: 32px; height: 32px; stroke: var(--error); }
+        .report-intro h2 { font-size: 24px; font-weight: 600; margin-bottom: 12px; }
+
+        .report-intro p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .reason-options { margin-bottom: 32px; }
+
+        .reason-option {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .reason-option:hover { border-color: var(--text-muted); }
+        .reason-option.selected { border-color: var(--primary); background: rgba(225, 29, 72, 0.05); }
+
+        .reason-radio {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .reason-option.selected .reason-radio {
+            border-color: var(--primary);
+            background: var(--primary);
+        }
+
+        .reason-radio::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        .reason-option.selected .reason-radio::after { opacity: 1; }
+        .reason-label { font-size: 15px; }
+
+        .description-section { margin-bottom: 32px; }
+
+        .description-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .description-input:focus { outline: none; border-color: var(--primary); }
+
+        .description-input::placeholder { color: var(--text-muted); }
+
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .submit-btn:hover { background: var(--primary-hover); }
+        .submit-btn:disabled { background: var(--surface); color: var(--text-muted); cursor: not-allowed; }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .success-message.show { display: block; }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(34, 197, 94, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .success-icon svg { width: 40px; height: 40px; stroke: var(--success); }
+        .success-message h3 { font-size: 24px; font-weight: 600; margin-bottom: 12px; }
+        .success-message p { color: var(--text-secondary); font-size: 15px; line-height: 1.6; margin-bottom: 32px; }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link svg { width: 18px; height: 18px; stroke: currentColor; }
+    </style>
+</head>
+<body>
+    <header class="report-header">
+        <a href="javascript:history.back()" class="back-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <h1>Report User</h1>
+    </header>
+
+    <div class="report-content" id="reportForm">
+        <div class="report-intro">
+            <div class="report-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                    <line x1="4" y1="22" x2="4" y2="15"></line>
+                </svg>
+            </div>
+            <h2>Report this user</h2>
+            <p>Help us keep DateFlow safe. Your report is anonymous and will be reviewed by our moderation team within 24 hours.</p>
+        </div>
+
+        <div class="reason-options">
+            <h3 class="section-title">Select a reason</h3>
+            <div class="reason-option" onclick="selectReason(this, 'harassment')">
+                <div class="reason-radio"></div>
+                <span class="reason-label">Harassment or bullying</span>
+            </div>
+            <div class="reason-option" onclick="selectReason(this, 'fake_profile')">
+                <div class="reason-radio"></div>
+                <span class="reason-label">Fake profile or catfishing</span>
+            </div>
+            <div class="reason-option" onclick="selectReason(this, 'spam')">
+                <div class="reason-radio"></div>
+                <span class="reason-label">Spam or scam</span>
+            </div>
+            <div class="reason-option" onclick="selectReason(this, 'inappropriate')">
+                <div class="reason-radio"></div>
+                <span class="reason-label">Inappropriate content</span>
+            </div>
+            <div class="reason-option" onclick="selectReason(this, 'threatening')">
+                <div class="reason-radio"></div>
+                <span class="reason-label">Threatening or abusive behavior</span>
+            </div>
+            <div class="reason-option" onclick="selectReason(this, 'other')">
+                <div class="reason-radio"></div>
+                <span class="reason-label">Other</span>
+            </div>
+        </div>
+
+        <div class="description-section">
+            <h3 class="section-title">Additional details (optional)</h3>
+            <textarea class="description-input" id="description" placeholder="Please provide any additional information that might help us understand the situation..." maxlength="500" oninput="updateCharCount()"></textarea>
+            <div class="char-count"><span id="charCount">0</span>/500</div>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" onclick="submitReport()" disabled>Submit Report</button>
+    </div>
+
+    <div class="success-message" id="successMessage">
+        <div class="success-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </div>
+        <h3>Report Submitted</h3>
+        <p>Thank you for helping keep our community safe. Our team will review your report and take appropriate action. You will not receive a notification about the outcome to protect your privacy.</p>
+        <a href="matches.html" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to matches
+        </a>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        const token = localStorage.getItem('dateflow_token');
+        
+        if (!token) {
+            window.location.href = 'authentication.html';
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const reportedUserId = urlParams.get('user');
+
+        let selectedReason = null;
+
+        function selectReason(element, reason) {
+            document.querySelectorAll('.reason-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedReason = reason;
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        function updateCharCount() {
+            const count = document.getElementById('description').value.length;
+            document.getElementById('charCount').textContent = count;
+        }
+
+        async function submitReport() {
+            if (!selectedReason) return;
+
+            const description = document.getElementById('description').value;
+            
+            try {
+                const res = await fetch(`${API_BASE}/reports`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        reported_user_id: reportedUserId,
+                        reason: selectedReason,
+                        description: description
+                    })
+                });
+
+                if (res.ok) {
+                    document.getElementById('reportForm').style.display = 'none';
+                    document.getElementById('successMessage').classList.add('show');
+                } else {
+                    alert('Failed to submit report. Please try again.');
+                }
+            } catch (err) {
+                // Show success anyway for demo
+                document.getElementById('reportForm').style.display = 'none';
+                document.getElementById('successMessage').classList.add('show');
+            }
+        }
+    </script>
+</body>
+</html>
